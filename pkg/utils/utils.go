@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"gopkg.in/yaml.v3"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 // LoadYaml load properties from yaml and convert to dot properties, then set into map
@@ -77,11 +76,4 @@ func Load(filename string, v interface{}, log logr.Logger) error {
 		log.Info("unsupported file type, neither json, nor yaml", "filename", filename)
 	}
 	return err
-}
-
-func NewLogger(enableDebug bool) logr.Logger {
-	logger := zap.New(func(o *zap.Options) {
-		o.Development = enableDebug
-	})
-	return logger
 }
