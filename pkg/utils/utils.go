@@ -13,7 +13,7 @@ import (
 )
 
 // LoadYaml load properties from yaml and convert to dot properties, then set into map
-func LoadYaml(content []byte, log logr.Logger) (map[string]string, error) {
+func LoadYaml(content []byte, log *logr.Logger) (map[string]string, error) {
 	m := make(map[string]interface{})
 	err := yaml.Unmarshal(content, &m)
 	if err != nil {
@@ -54,7 +54,7 @@ func flatValue(v interface{}, parent string, m map[string]string) {
 }
 
 // Load load config file and unmarshall
-func Load(filename string, v interface{}, log logr.Logger) error {
+func Load(filename string, v interface{}, log *logr.Logger) error {
 	content, err := ioutil.ReadFile(filepath.Clean(filename)) // fix gosec G304
 	if err != nil {
 		log.Error(err, "failed to open file", "filename", filename)
