@@ -17,6 +17,7 @@ type Handler interface {
 
 // Options http server options
 type ServerOptions struct {
+	Host            string `json:"host" yaml:"host"`
 	Port            int    `json:"port" yaml:"port"`
 	CAFile          string `json:"caFile" yaml:"caFile"`
 	PrivateKeyFile  string `json:"privateKetFile" yaml:"privateKeyFile"`
@@ -52,7 +53,7 @@ func (c *Server) Start(ctx context.Context) {
 		pprof.Register(r)
 	}
 	c.server = &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
+		Addr:    fmt.Sprintf("%s:%d", host, port),
 		Handler: r,
 	}
 	go func() {
