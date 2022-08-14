@@ -63,7 +63,7 @@ func (c *Client) Get(target string, headers map[string]string, response interfac
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		c.logger.Error(err, "failed to execute GET request", "status", resp.StatusCode)
+		c.logger.Error(err, "failed to execute GET request")
 		return err
 	}
 	defer resp.Body.Close()

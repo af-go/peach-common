@@ -31,3 +31,17 @@ func TestServer(t *testing.T) {
 	Server.Stop(ctx)
 
 }
+
+func TestNoServer(t *testing.T) {
+	logger := log.NewLogger(true)
+	clientOptions := ClientOptions{Timeout: 15}
+	client := NewClient(clientOptions, logger)
+	var response StatusResponse
+	err := client.Get("http://localhost:9090/healthz", make(map[string]string), &response)
+	if err != nil {
+		t.Fatalf("failed execute GET request %v", err)
+	}
+	if response.Message != "Up" {
+		t.Fatalf("failed to eval response, expect 'Up', actual: %s", response.Message)
+	}
+}
