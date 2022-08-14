@@ -53,7 +53,7 @@ func (c *Server) Start(ctx context.Context) {
 		pprof.Register(r)
 	}
 	c.server = &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", host, port),
+		Addr:    fmt.Sprintf("%s:%d", c.options.Host, port),
 		Handler: r,
 	}
 	go func() {

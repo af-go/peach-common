@@ -9,7 +9,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	serverOptions := ServerOptions{Port: 9090}
+	serverOptions := ServerOptions{Port: 9090, Host: ""}
 	logger := log.NewLogger(true)
 	handler := DummyHealthCheckHandler{}
 	Server := NewServer(serverOptions, logger, &handler)
