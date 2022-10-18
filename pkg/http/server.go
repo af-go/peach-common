@@ -77,29 +77,6 @@ func (c *Server) Stop(ctx context.Context) {
 	c.logger.Info(fmt.Sprintf("HTTP Server is shutdown at %v", time.Now()))
 }
 
-// DummyHealthCheckHandler dummy health check handler
-type DummyHealthCheckHandler struct {
-}
-
-// Build build health check handler
-func (h *DummyHealthCheckHandler) Build(engine *gin.Engine) {
-	engine.GET("/healthz", h.Healthz)
-}
-
-// Healthz health check api
-// @Produce json
-// @Summary health check
-// @Description check status
-// @Success 200 {object} StatusResponse
-// @Failure 400 {object} TTPError
-// @Failure 503 {object} HTTPError
-// @Router /healthz [get]
-func (h *DummyHealthCheckHandler) Healthz(gc *gin.Context) {
-	statusCode := 200
-	resp := StatusResponse{Message: "Up"}
-	gc.JSON(statusCode, &resp)
-}
-
 func NewError(gc *gin.Context, status int, err error) {
 	er := HTTPError{
 		Code:    status,

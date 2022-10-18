@@ -50,6 +50,31 @@ type Client struct {
 	logger  *logr.Logger
 }
 
+func (c *Client) GetRaw(target string, headers map[string]string) (string, error) {
+	client := http.Client{Timeout: time.Duration(c.options.Timeout) * time.Second}
+	req, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		c.logger.Error(err, "failed to build http request")
+		return "", err
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		c.logger.Error(err, "failed to execute GET request")
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Error(err, "failed to read GET response")
+		return "", err
+	}
+	return string(body), nil
+}
+
 func (c *Client) Get(target string, headers map[string]string, response interface{}) error {
 	client := http.Client{Timeout: time.Duration(c.options.Timeout) * time.Second}
 	req, err := http.NewRequest("GET", target, nil)
@@ -76,16 +101,18 @@ func (c *Client) Get(target string, headers map[string]string, response interfac
 		var r HTTPError
 		err = json.Unmarshal(body, &r)
 		if err != nil {
-			c.logger.Error(err, "failed to unmarsshal response")
+			c.logger.Error(err, "failed to unmarshal response")
 			return err
 		}
 		return fmt.Errorf("[%d] %s", r.Code, r.Message)
 	} else {
+
 		err = json.Unmarshal(body, response)
 		if err != nil {
-			c.logger.Error(err, "failed to unmarsshal response")
+			c.logger.Error(err, "failed to unmarshal response")
 			return err
 		}
+
 		return nil
 	}
 }
