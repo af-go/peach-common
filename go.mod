@@ -1,6 +1,6 @@
 module github.com/af-go/peach-common
 
-go 1.17
+go 1.19
 
 require (
 	github.com/gin-contrib/pprof v1.4.0

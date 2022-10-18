@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -55,7 +55,7 @@ func flatValue(v interface{}, parent string, m map[string]string) {
 
 // Load load config file and unmarshall
 func Load(filename string, v interface{}, log *logr.Logger) error {
-	content, err := ioutil.ReadFile(filepath.Clean(filename)) // fix gosec G304
+	content, err := os.ReadFile(filepath.Clean(filename)) // fix gosec G304
 	if err != nil {
 		log.Error(err, "failed to open file", "filename", filename)
 		return err

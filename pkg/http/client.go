@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -67,7 +67,7 @@ func (c *Client) GetRaw(target string, headers map[string]string) (string, error
 		return "", err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read GET response")
 		return "", err
@@ -92,7 +92,7 @@ func (c *Client) Get(target string, headers map[string]string, response interfac
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read GET response")
 		return err
@@ -139,7 +139,7 @@ func (c *Client) Post(target string, headers map[string]string, request interfac
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read POST response")
 		return err
@@ -181,7 +181,7 @@ func (c *Client) Delete(target string, headers map[string]string, response inter
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read DELETE response")
 		return err
@@ -226,7 +226,7 @@ func (c *Client) Patch(target string, headers map[string]string, request interfa
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read Patch response")
 		return err
@@ -273,7 +273,7 @@ func (c *Client) Put(target string, headers map[string]string, request interface
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read PUT response")
 		return err
@@ -311,7 +311,7 @@ func (c *Client) PostForm(target string, headers map[string]string, request map[
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.logger.Error(err, "failed to read POST response")
 		return err
