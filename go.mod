@@ -9,6 +9,7 @@ require (
 	github.com/go-logr/zapr v1.2.3
 	github.com/go-sql-driver/mysql v1.6.0
 	go.uber.org/zap v1.22.0
+	gonum.org/v1/gonum v0.12.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -30,7 +31,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
