@@ -3,19 +3,20 @@ package http
 import (
 	"net/http"
 
+	"github.com/af-go/peach-common/pkg/http/probe"
 	"github.com/gin-gonic/gin"
 )
 
-func NewDummyHealthCheckHandler() *DummyHealthCheckHandler {
-	return &DummyHealthCheckHandler{}
+func NewDummyHealthyHandler() *DummyHealthyHandler {
+	return &DummyHealthyHandler{}
 }
 
-// DummyHealthCheckHandler dummy health check handler
-type DummyHealthCheckHandler struct {
+// DummyHealthyHandler dummy health check handler
+type DummyHealthyHandler struct {
 }
 
 // Build build health check handler
-func (h *DummyHealthCheckHandler) Build(engine *gin.Engine) {
+func (h *DummyHealthyHandler) Build(engine *gin.Engine) {
 	engine.GET("/healthz", h.Healthz)
 }
 
@@ -27,7 +28,7 @@ func (h *DummyHealthCheckHandler) Build(engine *gin.Engine) {
 // @Failure 400 {object} TTPError
 // @Failure 503 {object} HTTPError
 // @Router /healthz [get]
-func (h *DummyHealthCheckHandler) Healthz(gc *gin.Context) {
+func (h *DummyHealthyHandler) Healthz(gc *gin.Context) {
 	statusCode := 200
 	resp := StatusResponse{Message: "Up"}
 	gc.JSON(statusCode, &resp)
@@ -45,4 +46,35 @@ type SimpleFSHandler struct {
 // Build build health check handler
 func (f *SimpleFSHandler) Build(engine *gin.Engine) {
 	engine.StaticFS(f.relativePath, http.Dir(f.fsPath))
+}
+
+func NewSimpleHealthyHandler() *SimpleHealthyHandler {
+	return &SimpleHealthyHandler{}
+}
+
+// SimpleHealthyHandler simple health check handler
+type SimpleHealthyHandler struct {
+}
+
+// Build build health check handler
+func (h *SimpleHealthyHandler) Build(engine *gin.Engine) {
+	engine.GET("/healthz", h.Healthz)
+}
+
+// Healthz health check api
+// @Produce json
+// @Summary health check
+// @Description check status
+// @Success 200 {object} StatusResponse
+// @Failure 400 {object} TTPError
+// @Failure 503 {object} HTTPError
+// @Router /healthz [get]
+func (h *SimpleHealthyHandler) Healthz(gc *gin.Context) {
+	statusCode := 200
+	resp := StatusResponse{Message: "Up"}
+	gc.JSON(statusCode, &resp)
+}
+
+type ProbeManager struct {
+	probes map[string]*probe.Probe
 }

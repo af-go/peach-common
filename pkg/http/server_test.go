@@ -12,7 +12,7 @@ import (
 func TestServer(t *testing.T) {
 	serverOptions := ServerOptions{Port: 9090, Host: ""}
 	logger := log.NewLogger(true)
-	hhandler := NewDummyHealthCheckHandler()
+	hhandler := NewDummyHealthyHandler()
 	fhandler := NewSimpleFSHandler("./testdata", "/ui")
 	Server := NewServer(serverOptions, logger, hhandler, fhandler)
 	ctx := context.Background()

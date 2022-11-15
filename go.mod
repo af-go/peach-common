@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
+	github.com/go-sql-driver/mysql v1.6.0
 	go.uber.org/zap v1.22.0
 	gopkg.in/yaml.v3 v3.0.1
 )
