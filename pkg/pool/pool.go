@@ -1,3 +1,7 @@
+/*
+*
+TODO need work with a Queue
+*/
 package pool
 
 import (

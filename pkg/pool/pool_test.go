@@ -35,11 +35,11 @@ func (m *PrinterTask) GetName() string {
 
 func TestPool(t *testing.T) {
 	logger := log.NewLogger(true)
-	pool := New(20, 20, 1*time.Second, logger)
+	pool := New(5, 20, 1*time.Second, logger)
 
 	//wg := sync.WaitGroup{}
 	//wg.Add(10 * len(names))
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 40; i++ {
 		for _, name := range names {
 			printer := PrinterTask{data: name, logger: logger}
 			//go func() {
@@ -53,7 +53,7 @@ func TestPool(t *testing.T) {
 	//wg.Wait()
 	pool.Shutdown()
 	result := *pool.GetResult()
-	if len(result) != 10*len(names) {
-		t.Errorf("Failed, Except %v , actual %v ", 10*len(names), len(result))
+	if len(result) != 40*len(names) {
+		t.Errorf("Failed, Except %v , actual %v ", 40*len(names), len(result))
 	}
 }
