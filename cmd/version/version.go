@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	DefaultVersion = "EXPERIMENTAL"
+)
+
 // VersionCmd version command
 var VersionCmd = &cobra.Command{
 	Use:   "version",
@@ -23,7 +27,7 @@ var VersionCmd = &cobra.Command{
 }
 
 // BuildVersion build verion
-var BuildVersion = "EXPERIMENTAL"
+var BuildVersion string
 
 // BuildBy build user
 var BuildBy string
@@ -39,6 +43,9 @@ var Commit string
 
 // New create version object
 func New() Version {
+	if BuildVersion == "" {
+		BuildVersion = DefaultVersion + Commit
+	}
 	return Version{Version: BuildVersion, BuildAt: BuildAt, BuildBy: BuildBy, GoVersion: GoVersion, Commit: Commit}
 }
 
