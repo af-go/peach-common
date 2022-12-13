@@ -44,7 +44,7 @@ var Commit string
 // New create version object
 func New() Version {
 	if BuildVersion == "" {
-		BuildVersion = DefaultVersion + Commit
+		BuildVersion = DefaultVersion
 	}
 	return Version{Version: BuildVersion, BuildAt: BuildAt, BuildBy: BuildBy, GoVersion: GoVersion, Commit: Commit}
 }
