@@ -61,12 +61,12 @@ func (c *Server) Start(ctx context.Context) {
 			c.logger.Error(err, "failed to start Server", "err", err)
 		}
 	}()
-	c.logger.Info(fmt.Sprintf("Server is listening on port %d", port))
+	c.logger.Info("server is listening", "port", port)
 }
 
 // Stop stop API Server
 func (c *Server) Stop(ctx context.Context) {
-	c.logger.Info(fmt.Sprintf("shutting down Server at %v", time.Now()))
+	c.logger.Info("shutting down Server", "time", time.Now())
 	_, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer func() {
 		cancel()
@@ -74,7 +74,7 @@ func (c *Server) Stop(ctx context.Context) {
 	if err := c.server.Shutdown(ctx); err != nil {
 		c.logger.Error(err, "failed to shut down Server gracefully")
 	}
-	c.logger.Info(fmt.Sprintf("HTTP Server is shutdown at %v", time.Now()))
+	c.logger.Info("server is shutdown", "time", time.Now())
 }
 
 func NewError(gc *gin.Context, status int, err error) {

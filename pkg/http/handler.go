@@ -76,5 +76,5 @@ func (h *SimpleHealthyHandler) Healthz(gc *gin.Context) {
 }
 
 type ProbeManager struct {
-	probes map[string]*probe.Probe
+	Probes map[string]*probe.Probe
 }

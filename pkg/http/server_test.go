@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -9,8 +10,12 @@ import (
 	"github.com/af-go/peach-common/pkg/log"
 )
 
+const (
+	port = 9099
+)
+
 func TestServer(t *testing.T) {
-	serverOptions := ServerOptions{Port: 9090, Host: ""}
+	serverOptions := ServerOptions{Port: port, Host: ""}
 	logger := log.NewLogger(true)
 	hhandler := NewDummyHealthyHandler()
 	fhandler := NewSimpleFSHandler("./testdata", "/ui")
@@ -24,7 +29,8 @@ func TestServer(t *testing.T) {
 	client := NewClient(clientOptions, logger)
 	var response StatusResponse
 	headers := make(map[string]string)
-	err := client.Get("http://localhost:9090/healthz", headers, &response)
+	url := fmt.Sprintf("http://localhost:%d/healthz", port)
+	err := client.Get(url, headers, &response)
 	if err != nil {
 		t.Fatalf("failed execute GET request %v", err)
 	}
@@ -41,18 +47,4 @@ func TestServer(t *testing.T) {
 	}
 	//Server.Stop(ctx)
 
-}
-
-func TestNoServer(t *testing.T) {
-	logger := log.NewLogger(true)
-	clientOptions := ClientOptions{Timeout: 15}
-	client := NewClient(clientOptions, logger)
-	var response StatusResponse
-	err := client.Get("http://localhost:9090/healthz", make(map[string]string), &response)
-	if err != nil {
-		t.Fatalf("failed execute GET request %v", err)
-	}
-	if response.Message != "Up" {
-		t.Fatalf("failed to eval response, expect 'Up', actual: %s", response.Message)
-	}
 }

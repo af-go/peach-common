@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime/debug"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -76,4 +77,15 @@ func Load(filename string, v interface{}, log *logr.Logger) error {
 		log.Info("unsupported file type, neither json, nor yaml", "filename", filename)
 	}
 	return err
+}
+
+func SafeGo(r func(), l logr.Logger, m string) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				l.Error(fmt.Errorf("%v", err), m, "stack", string(debug.Stack()))
+			}
+		}()
+		r()
+	}()
 }
