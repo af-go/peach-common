@@ -5,6 +5,8 @@ package ghclient
 **/
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"os"
@@ -12,6 +14,7 @@ import (
 	"github.com/go-logr/logr"
 
 	"github.com/google/go-github/v59/github"
+	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
 )
 
@@ -291,6 +294,45 @@ func (c *Client) DeleteBranch(ctx context.Context, owner string, name string, br
 	return nil
 }
 
+func (c *Client) CreateSecretInRepository(ctx context.Context, owner string, name string, secretName string, secretValue string) error {
+	publicKey, _, err := c.client.Actions.GetRepoPublicKey(ctx, owner, name)
+	if err != nil {
+		c.logger.Error(err, "no resource found", "resource", "repositroyPublicKey")
+		return err
+	}
+
+	encryptedSecret, err := encryptSecretWithPublicKey(publicKey, secretName, secretValue)
+	if err != nil {
+		c.logger.Error(err, "failed encrypt secret", "secret", secretName)
+		return err
+	}
+
+	if _, err := c.client.Actions.CreateOrUpdateRepoSecret(ctx, owner, name, encryptedSecret); err != nil {
+		c.logger.Error(err, "failed to create secret", "repositorySecret", secretName)
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) Publish(ctx context.Context, owner string, name string, branchName string, path string, customDomain string) error {
+	input := &github.Pages{
+		Source: &github.PagesSource{
+			Branch: &branchName,
+			Path:   &path,
+		},
+		CNAME: &customDomain,
+	}
+	pages, response, err := c.client.Repositories.EnablePages(ctx, owner, name, input)
+	fmt.Printf("%v\n%v\n%v\n", pages, response.Status, err)
+	if err != nil && response.StatusCode != 409 {
+		c.logger.Error(err, "failed to publish pages")
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) getRepositroy(ctx context.Context, owner string, name string) (*github.Repository, error) {
 	repo, _, err := c.client.Repositories.Get(ctx, owner, name)
 	if err != nil {
@@ -378,4 +420,29 @@ func buildFullNameIncludeHost(endpoint string, fullName string) string {
 		return ""
 	}
 	return fmt.Sprintf("%v%v%v", u.Host, string(os.PathSeparator), fullName)
+}
+
+func encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, secretValue string) (*github.EncryptedSecret, error) {
+
+	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
+	if err != nil {
+		return nil, err
+	}
+
+	var boxKey [32]byte
+	copy(boxKey[:], decodedPublicKey)
+	secretBytes := []byte(secretValue)
+	encryptedBytes, err := box.SealAnonymous([]byte{}, secretBytes, &boxKey, rand.Reader)
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedString := base64.StdEncoding.EncodeToString(encryptedBytes)
+	keyID := publicKey.GetKeyID()
+	encryptedSecret := &github.EncryptedSecret{
+		Name:           secretName,
+		KeyID:          keyID,
+		EncryptedValue: encryptedString,
+	}
+	return encryptedSecret, nil
 }
