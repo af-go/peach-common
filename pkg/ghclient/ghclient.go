@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -24,14 +25,15 @@ const (
 
 var clients map[string]*Client = make(map[string]*Client)
 
-var ErrGithubTokenNotFound = fmt.Errorf("github token is not found, unable to init github client")
-var ErrGithubClientInitFailed = fmt.Errorf("failed to init github client")
+var ErrGithubTokenNotFound = errors.New("github token is not found, unable to init github client")
+var ErrGithubClientInitFailed = errors.New("failed to init github client")
 
 // Repository general infomration about repository
 type Repository struct {
 	Name     string `json:"name"`
 	FullName string `json:"fullName"`
 	URL      string `json:"url"`
+	CloneURL string `json:"cloneUrl"`
 }
 
 type ClientOptions struct {
@@ -46,7 +48,7 @@ func NewClient(options *ClientOptions, logger *logr.Logger) *Client {
 	key := fmt.Sprintf("%s_%s", options.Endpoint, options.TokenEnvVar)
 	c, ok := clients[key]
 	if !ok {
-		logger.V(0).Info("failed to find client, creating", "key", key)
+		logger.V(1).Info("no github client found, creating ...", "key", key)
 		c = &Client{options: *options, logger: logger}
 		err := c.init()
 		if err != nil {
@@ -55,7 +57,7 @@ func NewClient(options *ClientOptions, logger *logr.Logger) *Client {
 		}
 		clients[key] = c
 	}
-	logger.V(0).Info("ghclient is ready", "key", key)
+	logger.V(1).Info("ghclient is ready", "key", key)
 	return c
 }
 
@@ -72,7 +74,7 @@ func (c *Client) init() error {
 	if c.options.TokenEnvVar != "" {
 		tokenEnvVar = c.options.TokenEnvVar
 	}
-	c.logger.V(0).Info("using env var for ghclient", "env", tokenEnvVar)
+	c.logger.V(1).Info("using env var for ghclient", "env", tokenEnvVar)
 	// Get github token from env
 	token, ok := os.LookupEnv(tokenEnvVar)
 	if !ok {
@@ -104,7 +106,7 @@ func (c *Client) CreateRepository(ctx context.Context, owner string, name string
 	}
 	repoOwner := owner
 	if owner == c.GetCurrentUser(ctx) {
-		c.logger.V(0).Info("this repository belong to user directly", "name", name)
+		c.logger.V(1).Info("this repository belong to user directly", "name", name)
 		repoOwner = ""
 	}
 	createdRepo, _, err := c.client.Repositories.Create(ctx, repoOwner, repo)
@@ -112,7 +114,7 @@ func (c *Client) CreateRepository(ctx context.Context, owner string, name string
 		c.logger.Error(err, "failed to create repository", "owner", repoOwner, "name", name)
 		return nil, err
 	}
-	return &Repository{Name: name, URL: *createdRepo.SSHURL, FullName: buildFullNameIncludeHost(c.options.Endpoint, *createdRepo.FullName)}, nil
+	return &Repository{Name: name, URL: *createdRepo.SSHURL, CloneURL: *createdRepo.CloneURL, FullName: buildFullNameIncludeHost(c.options.Endpoint, *createdRepo.FullName)}, nil
 }
 
 // ListRepositories list repository
@@ -123,7 +125,7 @@ func (c *Client) ListRepositories(ctx context.Context, owner string, filter stri
 	}
 	repositories := []Repository{}
 	for _, repo := range repos {
-		repositories = append(repositories, Repository{Name: *repo.Name, URL: *repo.SSHURL, FullName: buildFullNameIncludeHost(c.options.Endpoint, *repo.FullName)})
+		repositories = append(repositories, Repository{Name: *repo.Name, URL: *repo.SSHURL, CloneURL: *repo.CloneURL, FullName: buildFullNameIncludeHost(c.options.Endpoint, *repo.FullName)})
 	}
 	return repositories, nil
 }
@@ -136,7 +138,8 @@ func (c *Client) GetRepository(ctx context.Context, owner string, name string) (
 		c.logger.Error(err, "faile to find repository", "owner", owner, "name", name)
 		return nil, err
 	}
-	return &Repository{Name: *repo.Name, URL: *repo.SSHURL, FullName: buildFullNameIncludeHost(c.options.Endpoint, *repo.FullName)}, nil
+
+	return &Repository{Name: *repo.Name, URL: *repo.SSHURL, CloneURL: *repo.CloneURL, FullName: buildFullNameIncludeHost(c.options.Endpoint, *repo.FullName)}, nil
 }
 
 // CreatePullRequest create pull request
@@ -162,7 +165,7 @@ func (c *Client) CreatePullRequest(ctx context.Context, owner string, name strin
 		c.logger.Error(err, "failed to create pull request", "owner", owner, "name", name, "subject", subject)
 		return 0, err
 	}
-	c.logger.Info("pull request is created", "url", pr.GetHTMLURL())
+	c.logger.V(1).Info("pull request is created", "url", pr.GetHTMLURL())
 	return *pr.Number, nil
 }
 
@@ -175,7 +178,7 @@ func (c *Client) ClosePullRequest(ctx context.Context, owner string, name string
 		c.logger.Error(err, "failed to clost pull request", "owner", owner, "name", name, "num", number)
 		return err
 	}
-	c.logger.Info("pull request is closed", "owner", owner, "name", name, "num", number)
+	c.logger.V(1).Info("pull request is closed", "owner", owner, "name", name, "num", number)
 	return nil
 }
 
@@ -192,7 +195,7 @@ func (c *Client) AddPullRequestComment(ctx context.Context, owner string, name s
 		c.logger.Error(err, "failed to add comment to pull request", "owner", owner, "name", name, "num", number)
 		return err
 	}
-	c.logger.Info("one comment has been added to pull request", "owner", owner, "name", name, "num", number)
+	c.logger.V(1).Info("one comment has been added to pull request", "owner", owner, "name", name, "num", number)
 	return nil
 }
 
@@ -207,7 +210,7 @@ func (c *Client) AddReviewComment(ctx context.Context, owner, name string, numbe
 		c.logger.Error(err, "failed to add review to pull request", "owner", owner, "name", name, "num", number)
 		return 0, err
 	}
-	c.logger.Info("one review has been added to pull request", "owner", owner, "name", name, "num", number)
+	c.logger.V(1).Info("one review has been added to pull request", "owner", owner, "name", name, "num", number)
 	return review.GetID(), nil
 }
 
@@ -223,7 +226,7 @@ func (c *Client) SubmitReview(ctx context.Context, owner string, name string, nu
 		c.logger.Error(err, "failed to approve review for pull request", "owner", owner, "name", name, "num", number)
 		return err
 	}
-	c.logger.Info("pull request is approved", "owner", owner, "name", name, "num", number)
+	c.logger.V(1).Info("pull request is approved", "owner", owner, "name", name, "num", number)
 	return nil
 }
 
@@ -279,7 +282,7 @@ func (c *Client) CreateBranch(ctx context.Context, owner string, name string, br
 		c.logger.Error(err, "failed to create branch", "owner", owner, "name", name, "branch", branch)
 		return err
 	}
-	c.logger.Info("branch is ready", "owner", owner, "name", name, "branch", branch)
+	c.logger.V(1).Info("branch is ready", "owner", owner, "name", name, "branch", branch)
 	return nil
 }
 
@@ -290,7 +293,7 @@ func (c *Client) DeleteBranch(ctx context.Context, owner string, name string, br
 		c.logger.Error(err, "failed to delete ref (branch)", "owner", owner, "name", name, "branch", branch)
 		return err
 	}
-	c.logger.Info("branch is deleted", "owner", owner, "name", name, "branch", branch)
+	c.logger.V(1).Info("branch is deleted", "owner", owner, "name", name, "branch", branch)
 	return nil
 }
 
@@ -339,7 +342,7 @@ func (c *Client) getRepositroy(ctx context.Context, owner string, name string) (
 		c.logger.Error(err, "failed to find repository", "owner", owner, "name", name)
 		return nil, err
 	}
-	c.logger.Info("repository is found", "owner", owner, "name", name)
+	c.logger.V(1).Info("found repository", "owner", owner, "name", name)
 	return repo, nil
 }
 
@@ -361,17 +364,17 @@ func (c *Client) getTree(ctx context.Context, owner string, name string, ref *gi
 func (c *Client) getRef(ctx context.Context, owner string, name string, branch string) (*github.Reference, error) {
 	ref, _, err := c.client.Git.GetRef(ctx, owner, name, fmt.Sprintf("refs/heads/%s", branch))
 	if err == nil {
-		c.logger.Info("found ref (branch)", "owner", owner, "name", name, "branch", branch)
+		c.logger.V(1).Info("found ref (branch)", "owner", owner, "name", name, "branch", branch)
 		return ref, nil
 	}
-	c.logger.Info("failed to find ref (branch), creating", "owner", owner, "name", name, "branch", branch)
+	c.logger.V(1).Info("failed to find ref (branch), creating", "owner", owner, "name", name, "branch", branch)
 	// Get default branch
 	repo, err := c.getRepositroy(ctx, owner, name)
 	if err != nil {
 		c.logger.Error(err, "failed to find repository", "owner", owner, "name", name, "branch", branch)
 		return nil, err
 	}
-	c.logger.Info("try default branch", "owner", owner, "name", name, "branch", *repo.DefaultBranch)
+	c.logger.V(1).Info("try default branch", "owner", owner, "name", name, "branch", *repo.DefaultBranch)
 	baseRef, _, err := c.client.Git.GetRef(ctx, owner, name, fmt.Sprintf("refs/heads/%s", *repo.DefaultBranch))
 	if err != nil {
 		c.logger.Error(err, "faild found default branch", "owner", owner, "name", name, "branch", *repo.DefaultBranch)

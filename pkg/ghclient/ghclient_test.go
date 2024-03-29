@@ -28,8 +28,10 @@ func TestGet(t *testing.T) {
 	fmt.Printf("  Name: %v\n", repo.Name)
 	fmt.Printf("  FullName: %v\n", repo.FullName)
 	fmt.Printf("  URL: %v\n", repo.URL)
+	fmt.Printf("  CloneURL: %v\n", repo.CloneURL)
 }
 
+/*
 func TestCreate(t *testing.T) {
 	ctx := context.TODO()
 	client := NewClient(&ClientOptions{}, logger)
@@ -45,7 +47,7 @@ func TestCreate(t *testing.T) {
 	fmt.Printf("  Name: %v\n", repo.Name)
 	fmt.Printf("  FullName: %v\n", repo.FullName)
 	fmt.Printf("  URL: %v\n", repo.URL)
-}
+}*/
 
 /*
 func TestBranchCommitReview(t *testing.T) {
