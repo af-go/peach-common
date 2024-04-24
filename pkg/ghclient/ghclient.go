@@ -14,7 +14,7 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/google/go-github/v59/github"
+	"github.com/google/go-github/v61/github"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
 )

@@ -8,7 +8,7 @@ require (
 	github.com/go-logr/logr v1.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/go-sql-driver/mysql v1.8.1
-	github.com/google/go-github/v59 v59.0.0
+	github.com/google/go-github/v61 v61.0.1-0.20240419131631-8d4be0b2cf2b
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.22.0
